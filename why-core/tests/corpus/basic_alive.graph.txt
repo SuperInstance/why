@@ -1,0 +1,3 @@
+# Simple alive case
+role:analyst          -> project:active-migration   (explicit)
+workflow:deploy       -> project:active-migration   (explicit)

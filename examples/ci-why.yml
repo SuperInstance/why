@@ -1,0 +1,26 @@
+# Example GitHub Action — drop into .github/workflows/why.yml
+# Fails the job if any dead nodes are found.
+name: why
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install why
+        run: cargo install --path why-cli
+      - name: Extract graph
+        run: why extract . --out graph.txt
+      - name: Check necessity
+        run: |
+          if [ -f att.txt ]; then
+            why check graph.txt --alive att.txt
+          else
+            echo "No att.txt yet — extract only"
+            cat graph.txt
+          fi

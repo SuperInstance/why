@@ -1,0 +1,25 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # refs MIG-4821
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo test
+
+  approve:
+    needs: [build, test]
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo deploy
+      # ticket PLAT-77 still open?

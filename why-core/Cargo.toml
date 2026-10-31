@@ -1,0 +1,9 @@
+[package]
+name = "why-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Core graph, reachability, and status evaluation for why"
+
+[dependencies]
+thiserror = "1"

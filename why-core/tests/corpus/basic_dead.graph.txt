@@ -1,0 +1,3 @@
+# Simple dead case
+role:legacy-export    -> project:old-migration     (explicit)
+workflow:legacy-step  -> project:old-migration     (inferred)

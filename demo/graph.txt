@@ -1,0 +1,8 @@
+# Hand-enriched graph for the demo
+workflow:deploy#build     -> project:MIG-4821          (inferred)
+workflow:deploy#test      -> workflow:deploy#build     (explicit)
+workflow:deploy#approve   -> workflow:deploy#test      (explicit)
+workflow:deploy#approve   -> environment:production   (explicit)
+environment:production    -> project:MIG-4821          (inferred)
+role:deployer             -> project:MIG-4821          (explicit)
+role:legacy-export        -> project:OLD-100           (explicit)
