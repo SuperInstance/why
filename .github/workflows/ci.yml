@@ -19,6 +19,7 @@ jobs:
       - name: CLI smoke
         run: |
           cargo run -q -p why-cli -- --version
-          cargo run -q -p why-cli -- check why-core/tests/corpus/basic_dead/graph.txt --alive why-core/tests/corpus/basic_dead/att.txt --no-clock; ec=$?
+          ec=0
+          cargo run -q -p why-cli -- check why-core/tests/corpus/basic_dead/graph.txt --alive why-core/tests/corpus/basic_dead/att.txt --no-clock || ec=$?
           # exit 1 is the expected "findings present" contract
           [ "$ec" -eq 1 ] || { echo "expected exit 1, got $ec"; exit 1; }

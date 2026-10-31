@@ -138,7 +138,7 @@ own build + test + golden-corpus suite on every push (`.github/workflows/ci.yml`
 ## Status
 
 v0.2 — core reachability + candidate namespace + mortality + coverage +
-strict mode + full-depth deadness + golden corpus (52 tests; two same-day
+strict mode + full-depth deadness + golden corpus (53 tests; two same-day
 probe fixes from the external audit and the lab's round-3 deliberation:
 full-depth deadness and conjunctive short-circuit). Next on the lab's
 docket: the
