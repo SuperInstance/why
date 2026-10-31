@@ -1,0 +1,3 @@
+# Round-3 probe: a dead member falsifies the group; unknown can't revive it.
+orderset:x   -> all-of: project:dead-one policy:unchecked
+orderset:y   -> all-of: project:dead-one project:dead-two

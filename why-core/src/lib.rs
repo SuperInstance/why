@@ -147,10 +147,21 @@ impl Graph {
         self.conjunctive.entry(child).or_default().push(parents);
     }
 
-    /// Nodes that carry at least one justification (children of edges or
-    /// members of a conjunctive group's child side).
+    /// Nodes that carry at least one EXPLICIT justification: children of
+    /// explicit edges, or conjunctive-group children. Inferred (candidate)
+    /// wiring does not count — coverage measures adoption, and candidates
+    /// prove nothing, so they must not satisfy --fail-under.
     pub fn wired(&self) -> usize {
-        let mut wired: HashSet<&NodeId> = self.edges.keys().collect();
+        let mut wired: HashSet<&NodeId> = self
+            .edges
+            .iter()
+            .filter(|(_, parents)| {
+                parents
+                    .iter()
+                    .any(|(_, p)| matches!(p, Provenance::Explicit))
+            })
+            .map(|(c, _)| c)
+            .collect();
         wired.extend(self.conjunctive.keys());
         wired.len()
     }

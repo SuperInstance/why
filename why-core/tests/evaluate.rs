@@ -154,3 +154,10 @@ fn pair_dead_chain_depth2() {
 fn pair_dead_vs_dangling() {
     run_pair("dead_vs_dangling", None);
 }
+
+/// Round-3 probe: inside all-of, a dead member short-circuits — unknown
+/// siblings cannot revive a falsified conjunction.
+#[test]
+fn pair_conjunctive_short_circuit() {
+    run_pair("conjunctive_short_circuit", None);
+}

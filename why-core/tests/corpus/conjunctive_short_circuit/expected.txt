@@ -1,0 +1,6 @@
+# id                status
+project:dead-one    dead
+project:dead-two    dead
+policy:unchecked    unknown
+orderset:x          dead
+orderset:y          dead

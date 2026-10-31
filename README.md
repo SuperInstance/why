@@ -138,8 +138,10 @@ own build + test + golden-corpus suite on every push (`.github/workflows/ci.yml`
 ## Status
 
 v0.2 — core reachability + candidate namespace + mortality + coverage +
-strict mode + full-depth deadness + golden corpus (49 tests). Next on the
-lab's docket: the
+strict mode + full-depth deadness + golden corpus (52 tests; two same-day
+probe fixes from the external audit and the lab's round-3 deliberation:
+full-depth deadness and conjunctive short-circuit). Next on the lab's
+docket: the
 `--decide` disposition layer (annotate-only, calibrated retire/investigate/
 keep) and the agent/MCP adapter. Research and deliberation behind these
 decisions: the private `why-lab` library.

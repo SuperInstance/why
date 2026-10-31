@@ -204,6 +204,56 @@ impl Graph {
             }
         }
 
+        // ---- Pass 3.5: conjunctive group classification ----
+        // A group is: fully-alive (confers liveness), failed (any dead
+        // member — the conjunction is definitively falsified; unknown
+        // siblings cannot revive it), or undetermined (no dead, >=1
+        // unknown). Undetermined groups block dead verdicts: the node
+        // could still turn out alive once the unknowns resolve.
+        // (Short-circuit law: dead beats unknown inside an all-of group —
+        // the round-3 probe finding, same contamination class as the
+        // external audit's Finding 2.)
+        for _ in 0..self.conjunctive.len() + 2 {
+            let mut changed = false;
+            for (child, groups) in &self.conjunctive {
+                if status.contains_key(child) || groups.is_empty() {
+                    continue;
+                }
+                if !groups.iter().flatten().all(|m| status.contains_key(m)) {
+                    continue;
+                }
+                let mut any_alive = false;
+                let mut any_undetermined = false;
+                for group in groups {
+                    let mut has_dead = false;
+                    let mut has_unknown = false;
+                    for m in group {
+                        match status.get(m) {
+                            Some(Status::Alive) => {}
+                            Some(Status::Dead) => has_dead = true,
+                            _ => has_unknown = true,
+                        }
+                    }
+                    if !has_dead && !has_unknown {
+                        any_alive = true;
+                    }
+                    if !has_dead && has_unknown {
+                        any_undetermined = true;
+                    }
+                }
+                if any_alive {
+                    status.insert(child.clone(), Status::Alive);
+                    changed = true;
+                } else if any_undetermined {
+                    status.insert(child.clone(), Status::Unknown);
+                    changed = true;
+                }
+            }
+            if !changed {
+                break;
+            }
+        }
+
         // ---- Pass 4: dead through EXPLICIT paths to dead roots ----
         let mut dqueue: VecDeque<NodeId> = dead_roots.iter().cloned().collect();
         while let Some(node) = dqueue.pop_front() {
@@ -220,55 +270,23 @@ impl Graph {
             }
         }
 
-        // ---- Pass 5: conjunctive resolution (dead/unknown groups) ----
-        // Groups are disjunctive between themselves: any fully-alive group
-        // confers alive (handled in pass 1). Otherwise a group with an
-        // unknown member makes the child unknown; if every group contains a
-        // dead member and none has an unknown one, the child is dead.
+        // ---- Pass 5: conjunctive groups all definitively failed -> dead ----
         for _ in 0..self.conjunctive.len() + 2 {
             let mut changed = false;
             for (child, groups) in &self.conjunctive {
                 if status.contains_key(child) || groups.is_empty() {
                     continue;
                 }
-                // Only decide once every member of every group has a status.
                 if !groups.iter().flatten().all(|m| status.contains_key(m)) {
                     continue;
                 }
-                let mut any_alive_group = false;
-                let mut any_unknown_group = false;
-                let mut all_groups_killed = true;
-                for group in groups {
-                    let mut has_dead = false;
-                    let mut has_unknown = false;
-                    for m in group {
-                        match status.get(m) {
-                            Some(Status::Alive) => {}
-                            Some(Status::Dead) => has_dead = true,
-                            _ => has_unknown = true,
-                        }
-                    }
-                    if !has_dead && !has_unknown {
-                        any_alive_group = true;
-                    }
-                    if has_unknown {
-                        any_unknown_group = true;
-                    }
-                    if !has_dead {
-                        all_groups_killed = false;
-                    }
+                let all_failed = groups.iter().all(|group| {
+                    group.iter().any(|m| status.get(m) == Some(&Status::Dead))
+                });
+                if all_failed {
+                    status.insert(child.clone(), Status::Dead);
+                    changed = true;
                 }
-                let verdict = if any_alive_group {
-                    Status::Alive
-                } else if any_unknown_group {
-                    Status::Unknown
-                } else if all_groups_killed {
-                    Status::Dead
-                } else {
-                    continue;
-                };
-                status.insert(child.clone(), verdict);
-                changed = true;
             }
             if !changed {
                 break;
@@ -532,6 +550,52 @@ app:report -> project:active (inferred)
         .unwrap();
         let eval = g.evaluate(&a, None);
         assert_eq!(eval.status["orderset:old-orderset"], Status::Dead);
+    }
+
+    #[test]
+    fn conjunctive_short_circuit_dead_beats_unknown() {
+        // Round-3 probe finding: an all-of group with one DEAD member is
+        // definitively falsified — an unknown sibling cannot revive it.
+        let g = parse_graph(
+            "orderset:x -> all-of: project:dead-one policy:unchecked",
+        )
+        .unwrap();
+        let a = parse_attestation("project:dead-one dead 2024-01-01 probe").unwrap();
+        let eval = g.evaluate(&a, None);
+        assert_eq!(eval.status["policy:unchecked"], Status::Unknown);
+        assert_eq!(eval.status["orderset:x"], Status::Dead);
+    }
+
+    #[test]
+    fn conjunctive_undetermined_blocks_explicit_dead() {
+        // A node with an explicit path to a dead root AND an undetermined
+        // all-of group is unknown: the group could still turn out alive.
+        let g = parse_graph(
+            "app:x -> project:gone (explicit)\napp:x -> all-of: policy:pending",
+        )
+        .unwrap();
+        let a = parse_attestation("project:gone dead 2024-01-01 probe").unwrap();
+        let eval = g.evaluate(&a, None);
+        assert_eq!(eval.status["policy:pending"], Status::Unknown);
+        assert_eq!(eval.status["app:x"], Status::Unknown);
+    }
+
+    #[test]
+    fn coverage_counts_explicit_edges_only() {
+        // Inferred wiring must not inflate the coverage numerator
+        // (MiniMax round-3 gaming hole: --fail-under satisfiable with
+        // edges that intentionally prove nothing).
+        let g = parse_graph(
+            "# discovered: 2\nworkflow:ci -> project:alpha (inferred)\nworkflow:cd -> project:beta (explicit)\n",
+        )
+        .unwrap();
+        let a = parse_attestation("project:beta alive 2024-01-01 casey").unwrap();
+        let eval = g.evaluate(&a, None);
+        let cov = eval.coverage.unwrap();
+        assert_eq!(cov.wired, 1);
+        assert_eq!(cov.discovered, 2);
+        assert_eq!(eval.status["workflow:ci"], Status::Unknown);
+        assert_eq!(eval.status["workflow:cd"], Status::Alive);
     }
 
     #[test]

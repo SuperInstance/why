@@ -38,9 +38,12 @@ needs the protocol alive AND the patient condition present).
 Group semantics, in precedence order:
 
 - all members alive → the node is `alive`
-- any member unknown → the node is `unknown` (evidence incomplete)
-- a dead member kills its group; if every group of the node contains a
-  dead member and none has an unknown one → `dead`
+- **short-circuit: a dead member falsifies its group definitively — an
+  unknown sibling cannot revive it** (dead beats unknown inside `all-of`)
+- a group with no dead and ≥1 unknown member is *undetermined*: it blocks
+  a `dead` verdict for the node (the group could still turn out alive)
+- if every group of the node is definitively falsified and none is
+  undetermined → `dead`
 - multiple groups are disjunctive between themselves: any fully-alive
   group confers liveness
 
@@ -52,9 +55,12 @@ Group semantics, in precedence order:
 
 Written by `why extract` (the count of artifacts the adapter discovered,
 e.g. workflow jobs). `why check` reports `coverage: wired/discovered` —
-the fraction of discovered artifacts that carry at least one justification
-edge. **An unwired repository must never read as "healthy."** `--fail-under
-<PCT>` turns a coverage shortfall into a CI failure.
+the fraction of discovered artifacts that carry at least one **explicit**
+justification edge. Inferred (candidate) wiring does not count toward the
+numerator: candidates prove nothing, so they must not be usable to
+satisfy `--fail-under`. **An unwired repository must never read as
+"healthy."** `--fail-under <PCT>` turns a coverage shortfall into a CI
+failure.
 
 ## att.txt — root attestations
 
