@@ -1,0 +1,9 @@
+# id                       status
+reg:clinical-standard      alive
+protocol:sepsis-v3         alive
+policy:condition-active    alive
+project:cancelled          dead
+policy:unchecked           unknown
+orderset:icu-sepsis-v3     alive
+orderset:old-orderset      dead
+orderset:maybe             unknown

@@ -1,3 +1,5 @@
-project:MIG-4821     dead   2023-04-12  ci
-project:OLD-100      dead   2022-01-01  ci
-environment:production  alive  2024-06-01  platform
+# root-id  alive|dead  [since]  [by]  [until=…]  [review-by=…]
+project:MIG-4821          dead   2023-04-12  ci
+project:OLD-100           dead   2022-01-01  ci
+environment:production    alive  2024-06-01  platform    review-by=2027-01-01
+project:incident-response alive  2025-01-01  sre         until=2027-01-01

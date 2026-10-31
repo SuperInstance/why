@@ -1,4 +1,4 @@
-# Hand-enriched graph for the demo
+# Hand-enriched graph for the demo (v0.2: all-of, until, review-by)
 workflow:deploy#build     -> project:MIG-4821          (inferred)
 workflow:deploy#test      -> workflow:deploy#build     (explicit)
 workflow:deploy#approve   -> workflow:deploy#test      (explicit)
@@ -6,3 +6,5 @@ workflow:deploy#approve   -> environment:production   (explicit)
 environment:production    -> project:MIG-4821          (inferred)
 role:deployer             -> project:MIG-4821          (explicit)
 role:legacy-export        -> project:OLD-100           (explicit)
+role:oncall-override      -> project:incident-response (explicit)
+orderset:nightly-audit    -> all-of: environment:production role:oncall-override

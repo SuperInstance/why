@@ -1,0 +1,4 @@
+# id                     status
+role:analyst             alive
+workflow:deploy          alive
+project:active-migration alive

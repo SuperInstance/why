@@ -1,5 +1,5 @@
 # Example GitHub Action — drop into .github/workflows/why.yml
-# Fails the job if any dead nodes are found.
+# Fails the job on dead findings; strict mode enforces referential integrity.
 name: why
 on:
   pull_request:
@@ -19,8 +19,12 @@ jobs:
       - name: Check necessity
         run: |
           if [ -f att.txt ]; then
-            why check graph.txt --alive att.txt
+            # exit 1 on dead findings; strict adds integrity checks
+            why check graph.txt --alive att.txt --strict
           else
-            echo "No att.txt yet — extract only"
+            echo "No att.txt yet — statuses stay unknown until roots are attested"
+            why check graph.txt
             cat graph.txt
           fi
+      # Optional policy gate once adoption starts:
+      #   why check graph.txt --alive att.txt --strict --fail-under 80

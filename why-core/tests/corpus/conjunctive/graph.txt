@@ -1,0 +1,5 @@
+# all-of groups: alive iff every member is alive.
+orderset:icu-sepsis-v3   -> all-of: protocol:sepsis-v3 policy:condition-active
+orderset:old-orderset    -> all-of: protocol:sepsis-v3 project:cancelled
+orderset:maybe           -> all-of: protocol:sepsis-v3 policy:unchecked
+protocol:sepsis-v3       -> reg:clinical-standard   (explicit)

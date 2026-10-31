@@ -1,0 +1,3 @@
+# Simple alive case: two artifacts, one live project root.
+role:analyst          -> project:active-migration   (explicit)
+workflow:deploy       -> project:active-migration   (explicit)

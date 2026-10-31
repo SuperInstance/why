@@ -1,0 +1,4 @@
+# id                   status
+role:legacy-export     dead
+workflow:legacy-step   unknown
+project:old-migration  dead

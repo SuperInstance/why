@@ -1,0 +1,3 @@
+# id             status
+app:tmp-role     alive
+project:burst    alive

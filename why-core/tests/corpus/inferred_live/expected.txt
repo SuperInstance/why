@@ -1,0 +1,4 @@
+# id            status
+app:exporter    alive
+app:legacy      unknown
+project:alpha   alive

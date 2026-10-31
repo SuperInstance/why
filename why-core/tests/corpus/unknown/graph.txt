@@ -1,0 +1,2 @@
+# No attestation at all: everything honest-unknown.
+service:billing   -> ticket:BILL-99   (inferred)

@@ -1,0 +1,3 @@
+# Explicit path to a dead root AND inferred path to a live root.
+app:report   -> project:old      (explicit)
+app:report   -> project:active   (inferred)

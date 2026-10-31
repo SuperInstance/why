@@ -1,0 +1,3 @@
+# v0.1 called the inferred child dead; v0.2 calls it unknown.
+role:legacy-export     -> project:old-migration   (explicit)
+workflow:legacy-step   -> project:old-migration   (inferred)

@@ -1,0 +1,3 @@
+# An inferred edge to a DEAD root confers nothing either.
+app:report        -> project:old   (explicit)
+app:legacy-export -> project:old   (inferred)

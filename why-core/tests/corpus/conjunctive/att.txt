@@ -1,0 +1,3 @@
+reg:clinical-standard   alive   2024-01-01   medical-board
+policy:condition-active alive   2026-10-01   physician
+project:cancelled       dead    2025-01-01   admin

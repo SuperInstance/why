@@ -1,0 +1,3 @@
+# id             status
+app:tmp-role     dead
+project:burst    dead

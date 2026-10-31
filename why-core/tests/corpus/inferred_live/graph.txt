@@ -1,0 +1,3 @@
+# An inferred edge to a LIVE root confers nothing.
+app:exporter   -> project:alpha   (explicit)
+app:legacy     -> project:alpha   (inferred)
