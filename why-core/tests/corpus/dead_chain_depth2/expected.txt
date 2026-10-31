@@ -1,0 +1,4 @@
+# id         status
+root:dead    dead
+mid:y        dead
+leaf:x       dead

@@ -156,11 +156,18 @@ impl Graph {
             }
         }
 
-        // ---- Pass 3: unattested or stale roots -> unknown, propagated ----
+        // ---- Pass 3: dangling roots (unattested, no chain of their own) or
+        // stale roots -> unknown, propagated ----
+        // A parent that carries its own justification chain is NOT a source:
+        // its status derives from that chain, so deadness can propagate
+        // through it at any depth (external audit 2026-10-30, Finding 2).
         let mut unknown_sources: HashSet<NodeId> = HashSet::new();
         for parents in self.edges.values() {
             for (parent, _) in parents {
-                if !att.roots.contains_key(parent) {
+                if !att.roots.contains_key(parent)
+                    && !self.edges.contains_key(parent)
+                    && !self.conjunctive.contains_key(parent)
+                {
                     unknown_sources.insert(parent.clone());
                 }
             }
@@ -322,7 +329,13 @@ impl Graph {
                 chain.push(prev.clone());
                 current = prev.clone();
             } else if let Some(parents) = self.edges.get(&current) {
-                if let Some((parent, _)) = parents.first() {
+                // Prefer an explicit parent so the printed "because" matches
+                // the edge that can actually determine status (audit note).
+                let chosen = parents
+                    .iter()
+                    .find(|(_, p)| matches!(p, Provenance::Explicit))
+                    .or_else(|| parents.first());
+                if let Some((parent, _)) = chosen {
                     chain.push(parent.clone());
                     current = parent.clone();
                 } else {
@@ -409,6 +422,38 @@ app:report -> project:active (inferred)
         .unwrap();
         let eval = g.evaluate(&a, None);
         assert_eq!(eval.status["app:report"], Status::Unknown);
+    }
+
+    #[test]
+    fn deadness_propagates_full_depth() {
+        // External audit 2026-10-30, Finding 2: explicit chains under a dead
+        // root are dead at ANY depth, not just one hop.
+        let g = parse_graph(
+            "leaf:x -> mid:y (explicit)\nmid:y -> root:dead (explicit)",
+        )
+        .unwrap();
+        let a = parse_attestation("root:dead dead 2023-04-12 probe").unwrap();
+        let eval = g.evaluate(&a, None);
+        assert_eq!(eval.status["root:dead"], Status::Dead);
+        assert_eq!(eval.status["mid:y"], Status::Dead);
+        assert_eq!(eval.status["leaf:x"], Status::Dead);
+    }
+
+    #[test]
+    fn dangling_branch_beats_dead_branch() {
+        // A node with one path to a dead root and one path to a dangling
+        // (unattested, no chain) parent is unknown: the unresolved branch
+        // could still be alive.
+        let g = parse_graph(
+            "leaf:a -> mid:b (explicit)\nmid:b -> root:dead (explicit)\nmid:b -> root:dangling (explicit)",
+        )
+        .unwrap();
+        let a = parse_attestation("root:dead dead 2023-01-01 probe").unwrap();
+        let eval = g.evaluate(&a, None);
+        assert_eq!(eval.status["root:dead"], Status::Dead);
+        assert_eq!(eval.status["root:dangling"], Status::Unknown);
+        assert_eq!(eval.status["mid:b"], Status::Unknown);
+        assert_eq!(eval.status["leaf:a"], Status::Unknown);
     }
 
     #[test]

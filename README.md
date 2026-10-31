@@ -92,6 +92,12 @@ v0.1 could lie in both directions. v0.2 closes the six confirmed blockers:
    graph + attestations + expected statuses + a surprise note
    (`why-core/tests/corpus/`). Changing a pair is a semantic decision, not
    a refactor.
+7. **Full-depth deadness** — an independent external audit
+   ([docs/audit-2026-10-30.md](docs/audit-2026-10-30.md)) found that
+   deadness stopped at one hop behind an `unknown` flood, so a fully dead
+   graph could exit clean. Fixed by seeding `unknown` only from dangling
+   parents; pinned by the `dead_chain_depth2` and `dead_vs_dangling`
+   pairs. Our response: [docs/audit-2026-10-30-response.md](docs/audit-2026-10-30-response.md).
 
 ## Verbs
 
@@ -132,7 +138,8 @@ own build + test + golden-corpus suite on every push (`.github/workflows/ci.yml`
 ## Status
 
 v0.2 — core reachability + candidate namespace + mortality + coverage +
-strict mode + golden corpus (45 tests). Next on the lab's docket: the
+strict mode + full-depth deadness + golden corpus (49 tests). Next on the
+lab's docket: the
 `--decide` disposition layer (annotate-only, calibrated retire/investigate/
 keep) and the agent/MCP adapter. Research and deliberation behind these
 decisions: the private `why-lab` library.

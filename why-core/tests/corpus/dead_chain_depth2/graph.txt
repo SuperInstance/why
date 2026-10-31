@@ -1,0 +1,3 @@
+# External audit 2026-10-30, Finding 2: deadness must propagate full depth.
+leaf:x    -> mid:y      (explicit)
+mid:y     -> root:dead  (explicit)

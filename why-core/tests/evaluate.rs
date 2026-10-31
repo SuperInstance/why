@@ -141,3 +141,16 @@ fn chain_reconstruction() {
 fn pair_mixed_explicit_dead_inferred_live() {
     run_pair("mixed_verdicts", None);
 }
+
+/// External audit 2026-10-30, Finding 2: explicit chains under a dead root
+/// are dead at any depth — a fully dead graph must never exit clean.
+#[test]
+fn pair_dead_chain_depth2() {
+    run_pair("dead_chain_depth2", None);
+}
+
+/// A dangling (unresolved) branch beats a dead branch: unknown wins.
+#[test]
+fn pair_dead_vs_dangling() {
+    run_pair("dead_vs_dangling", None);
+}

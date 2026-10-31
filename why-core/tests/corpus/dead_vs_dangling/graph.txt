@@ -1,0 +1,4 @@
+# One path to a dead root, one path to a dangling parent.
+leaf:a      -> mid:b          (explicit)
+mid:b       -> root:dead      (explicit)
+mid:b       -> root:dangling  (explicit)

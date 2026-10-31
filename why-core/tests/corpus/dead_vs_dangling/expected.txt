@@ -1,0 +1,5 @@
+# id             status
+root:dead        dead
+root:dangling    unknown
+mid:b            unknown
+leaf:a           unknown
